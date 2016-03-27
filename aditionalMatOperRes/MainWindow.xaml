@@ -1,0 +1,56 @@
+﻿<Window x:Class="aditionalMatOperRes.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="371" Width="585.716">
+    <Grid>
+        <TabControl SelectedIndex="1">
+            <TabItem Header="Lab1">
+                <Grid>
+                    <TextBox Name="equationText" Height="23" Margin="74,26,334,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="x^5"/>
+                    <Label Content="Equation:" HorizontalAlignment="Left" Margin="10,22,0,0" VerticalAlignment="Top"/>
+                    <Label Content="Result:" HorizontalAlignment="Left" Margin="10,44,0,0" VerticalAlignment="Top"/>
+                    <Label Name="resultText" Content="Result string" Margin="10,67,10,10"/>
+                    <Label Content="a=" HorizontalAlignment="Right" Margin="0,0,305,0" VerticalAlignment="Top"/>
+                    <Label Content="b=" HorizontalAlignment="Right" Margin="0,27,304,0" VerticalAlignment="Top"/>
+                    <Label Content="E=" HorizontalAlignment="Right" Margin="0,0,225,0" VerticalAlignment="Top"/>
+                    <TextBox Name="aValue" HorizontalAlignment="Right" Height="23" Margin="0,4,249,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="57"/>
+                    <TextBox Name="bValue" HorizontalAlignment="Right" Height="23" Margin="0,30,249,0" TextWrapping="Wrap" Text="100" VerticalAlignment="Top" Width="57"/>
+                    <TextBox Name="epsilonValue" HorizontalAlignment="Right" Height="23" Margin="0,4,105,0" TextWrapping="Wrap" Text="0,00001" VerticalAlignment="Top" Width="120"/>
+                    <ComboBox Name="extremumValue" HorizontalAlignment="Right" Margin="0,30,105,0" VerticalAlignment="Top" Width="73"/>
+                    <Button Content="Fibonacci" HorizontalAlignment="Right" Margin="0,4,26,0" VerticalAlignment="Top" Width="74" Height="22" Click="Fibonacci"/>
+                    <Button Content="Cub apptox" Margin="0,31,26,0" VerticalAlignment="Top" Height="22" Click="CubicApproximation" HorizontalAlignment="Right" Width="74"/>
+                    <Label Content="Extremum:" HorizontalAlignment="Right" Margin="0,27,178,0" VerticalAlignment="Top"/>
+                    <Button Content="+" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="17" Height="21" Click="Button_Click"/>
+                    <Button Content="+" HorizontalAlignment="Left" Margin="32,0,0,0" VerticalAlignment="Top" Width="17" Height="21" Click="Button1_Click"/>
+                    <Button Content="№1" HorizontalAlignment="Left" Margin="54,0,0,0" VerticalAlignment="Top" Width="25" Height="21" Click="Button3_Click"/>
+                    <Button Content="№4" HorizontalAlignment="Left" Margin="84,0,0,0" VerticalAlignment="Top" Width="25" Height="21" Click="Button2_Click"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Lab2">
+                <Grid>
+                    <TextBox Name="equationText2" Height="23" Margin="74,26,336,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="2x1^2+x1*x2+x2^2"/>
+                    <Label Content="Equation:" HorizontalAlignment="Left" Margin="10,22,0,0" VerticalAlignment="Top"/>
+                    <TextBox Name="alfaVal" Height="23" Margin="0,3,249,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="2" HorizontalAlignment="Right" Width="54"/>
+                    <Label Content="α = " HorizontalAlignment="Right" Margin="0,-2,303,0" VerticalAlignment="Top" Width="28"/>
+                    <TextBox Name="deltaVal" Height="23" Margin="0,48,249,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="0.1" HorizontalAlignment="Right" Width="54"/>
+                    <Label Name="deltaText" Content="Δх= " HorizontalAlignment="Right" Margin="0,44,303,0" VerticalAlignment="Top" Width="28"/>
+                    <TextBox Name="epsilonVal" Height="23" Margin="0,25,249,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="0.000001" HorizontalAlignment="Right" Width="54"/>
+                    <Label Content="ε=" HorizontalAlignment="Right" Margin="0,23,303,0" VerticalAlignment="Top" Width="28"/>
+                    <TextBox Name="bettaVal" Height="23" Margin="0,48,249,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="-0.5" HorizontalAlignment="Right" Width="54"/>
+                    <Label Name="bettaText" Content="β = " HorizontalAlignment="Right" Margin="0,44,303,0" VerticalAlignment="Top" Width="28"/>
+                    <Label Content="Result:" HorizontalAlignment="Right" Margin="0,8,193,0" VerticalAlignment="Top"/>
+                    <Label Name="resultText2" Content="Result string" Margin="0,39,10,10" HorizontalAlignment="Right" Width="228"/>
+                    <Button Name="doLab2" Content="Hook - Jeeves" HorizontalAlignment="Left" Margin="117,0,0,10" VerticalAlignment="Bottom" Width="88" Height="22" Click="Hook_Jeeves"/>
+                    <Button Content="№1" HorizontalAlignment="Left" Margin="10,1,0,0" VerticalAlignment="Top" Width="25" Height="21" Click="Button4_Click"/>
+                    <Button Content="№4" HorizontalAlignment="Left" Margin="40,1,0,0" VerticalAlignment="Top" Width="25" Height="21" Click="Button5_Click"/>
+                    <GroupBox Header="Variables" Margin="13,78,243,37">
+                        <Grid Name="Variables">
+                        </Grid>
+                    </GroupBox>
+                    <Button Content="Read Eqation" HorizontalAlignment="Left" Margin="10,53,0,0" VerticalAlignment="Top" Width="88" Click="ReadFunction"/>
+                    <Button Content="Swap Method" HorizontalAlignment="Left" Margin="117,1,0,0" VerticalAlignment="Top" Width="88" Click="SwapMethods_Click" Height="21"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
