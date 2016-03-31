@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="371" Width="585.716">
     <Grid>
-        <TabControl SelectedIndex="1">
+        <TabControl SelectedIndex="2">
             <TabItem Header="Lab1">
                 <Grid>
                     <TextBox Name="equationText" Height="23" Margin="74,26,334,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="x^5"/>
@@ -49,6 +49,25 @@
                     </GroupBox>
                     <Button Content="Read Eqation" HorizontalAlignment="Left" Margin="10,53,0,0" VerticalAlignment="Top" Width="88" Click="ReadFunction"/>
                     <Button Content="Swap Method" HorizontalAlignment="Left" Margin="117,1,0,0" VerticalAlignment="Top" Width="88" Click="SwapMethods_Click" Height="21"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Lab3">
+                <Grid>
+                    <TextBox Name="equationText3" Height="23" Margin="74,26,336,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="x1^2+x2^2"/>
+                    <Label Content="Equation:" HorizontalAlignment="Left" Margin="10,22,0,0" VerticalAlignment="Top"/>
+                    <TextBox Name="epsVal" Height="23" Margin="0,25,249,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="0.0001" HorizontalAlignment="Right" Width="54"/>
+                    <Label Content="ε=" HorizontalAlignment="Right" Margin="0,23,303,0" VerticalAlignment="Top" Width="28"/>
+                    <Label Content="Result:" HorizontalAlignment="Right" Margin="0,8,193,0" VerticalAlignment="Top"/>
+                    <Label Name="resultText3" Content="Result string" Margin="0,39,10,10" HorizontalAlignment="Right" Width="228"/>
+                    <Button Content="Steepest descent" HorizontalAlignment="Left" Margin="40,0,0,10" VerticalAlignment="Bottom" Width="104" Height="22" Click="Gradient_descent"/>
+                    <Button Content="Fletcher–Reeves" HorizontalAlignment="Right" Margin="0,0,274,10" VerticalAlignment="Bottom" Width="104" Height="22" Click="Fletcher_Reeves"/>
+                    <Button Content="№1" HorizontalAlignment="Left" Margin="10,1,0,0" VerticalAlignment="Top" Width="25" Height="21" Click="Button7_Click"/>
+                    <Button Content="№4" HorizontalAlignment="Left" Margin="40,1,0,0" VerticalAlignment="Top" Width="25" Height="21" Click="Button8_Click"/>
+                    <GroupBox Header="Variables" Margin="13,78,243,37">
+                        <Grid Name="Variables3">
+                        </Grid>
+                    </GroupBox>
+                    <Button Content="Read Eqation" HorizontalAlignment="Left" Margin="10,53,0,0" VerticalAlignment="Top" Width="88" Click="ReadFunction"/>
                 </Grid>
             </TabItem>
         </TabControl>

@@ -95,6 +95,45 @@ namespace aditionalMatOperRes
             }
             catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
         }
+
+        private int CubicApproximationAlgorithm(Equation f, ref List<double> x)
+        {
+            double fDiv = (double)f.FindDerivative(x[0]), delta = 0.01;
+            do
+            {
+                if (fDiv < 0) x.Add(x[x.Count - 1] + Math.Pow(2, x.Count - 1) * delta);
+                else x.Add(x[x.Count - 1] - Math.Pow(2, x.Count - 1) * delta);
+            }
+            while (f.FindDerivative(x[x.Count - 2]) * f.FindDerivative(x[x.Count - 1]) > 0);
+            double x1 = x[x.Count - 2], x2 = x[x.Count - 1], x_s_chertoy = 0;
+            int n = 0;
+            while (n < 1000)
+            {
+                double f1 = (double)f.Find(x1), f2 = (double)f.Find(x2), f1div = (double)f.FindDerivative(x1), f2div = (double)f.FindDerivative(x2);
+                double z = 3 * (f1 - f2) / (x2 - x1) + f1div + f2div;
+                double w = Math.Pow(Math.Pow(z, 2) - f1div * f2div, 0.5);
+                if (x1 > x2) w *= -1;
+                double m = (f2div + w - z) / (f2div - f1div + 2 * w);
+                if (m < 0) x_s_chertoy = x2;
+                else if (m > 1) x_s_chertoy = x1;
+                else x_s_chertoy = x2 - m * (x2 - x1);
+                while (f.Find(x_s_chertoy) > f.Find(x1)) { n++; x_s_chertoy -= 0.5 * (x_s_chertoy - x1); }
+                if (Math.Abs(f1div) < Epsilon || Math.Abs((x_s_chertoy - x1) / (x_s_chertoy)) < Epsilon) break;
+                else
+                {
+                    if (f.FindDerivative(x_s_chertoy) * f.FindDerivative(x1) < 0)
+                    {
+                        x2 = x1;
+                        x1 = x_s_chertoy;
+                    }
+                    else
+                        if (f.FindDerivative(x_s_chertoy) * f.FindDerivative(x2) < 0) x1 = x_s_chertoy;
+                }
+                n++;
+            }
+            x.Add(x_s_chertoy);
+            return n;
+        }
         private void CubicApproximation(object sender, RoutedEventArgs e)
         {
             try
@@ -103,41 +142,9 @@ namespace aditionalMatOperRes
                 Epsilon = double.Parse(epsilonValue.Text);
                 List<double> x = new List<double>();
                 x.Add((double)new Equation(aValue.Text).Find());
-                double fDiv = (double)f.FindDerivative(x[0]), delta = 0.01;
-                do
-                {
-                    if (fDiv < 0) x.Add(x[x.Count - 1] + Math.Pow(2, x.Count - 1) * delta);
-                    else x.Add(x[x.Count - 1] - Math.Pow(2, x.Count - 1) * delta);
-                }
-                while (f.FindDerivative(x[x.Count - 2]) * f.FindDerivative(x[x.Count - 1]) > 0);
-                double x1 = x[x.Count - 2], x2 = x[x.Count - 1], x_s_chertoy = 0;
-                int n = 0;
-                while (n < 10000)
-                {
-                    double f1 = (double)f.Find(x1), f2 = (double)f.Find(x2), f1div = (double)f.FindDerivative(x1), f2div = (double)f.FindDerivative(x2);
-                    double z = 3 * (f1 - f2) / (x2 - x1) + f1div + f2div;
-                    double w = Math.Pow(Math.Pow(z, 2) - f1div * f2div, 0.5);
-                    if (x1 > x2) w *= -1;
-                    double m = (f2div + w - z) / (f2div - f1div + 2 * w);
-                    if (m < 0) x_s_chertoy = x2;
-                    else if (m > 1) x_s_chertoy = x1;
-                    else x_s_chertoy = x2 - m * (x2 - x1);
-                    while (f.Find(x_s_chertoy) > f.Find(x1)) { n++; x_s_chertoy -= 0.5 * (x_s_chertoy - x1); }
-                    if (Math.Abs(f1div) < Epsilon && Math.Abs((x_s_chertoy - x1) / (x_s_chertoy)) < Epsilon) break;
-                    else
-                    {
-                        if (f.FindDerivative(x_s_chertoy) * f.FindDerivative(x1) < 0)
-                        {
-                            x2 = x1;
-                            x1 = x_s_chertoy;
-                        }
-                        else
-                            if (f.FindDerivative(x_s_chertoy) * f.FindDerivative(x2) < 0) x1 = x_s_chertoy;
-                    }
-                    n++;
-                }
-                resultText.Content = "Найден ответ за " + n + "шагов:\nМинимум достигается при x = " + x_s_chertoy.ToString() + 
-                    "\nf(x) = " + (double)f.Find(x_s_chertoy);
+                int n = CubicApproximationAlgorithm(f, ref x);
+                resultText.Content = "Найден ответ за " + n + "шагов:\nМинимум достигается при x = " + x[x.Count - 1].ToString() +
+                    "\nf(x) = " + (double)f.Find(x[x.Count - 1]);
             }
             catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
         }
@@ -178,51 +185,64 @@ namespace aditionalMatOperRes
         #region Hook-Jeeves && Rosenbrock
         private void ReadFunction(object sender, RoutedEventArgs e)
         {
-            f = new Equation(equationText2.Text);
-            createVariablesField();
-            equationText2.Text = f.inputText;
+            TextBox textBox = getLabName(e) == "Lab2" ? equationText2 : equationText3;
+            f = new Equation(textBox.Text);
+            createVariablesField(true, e);
+            textBox.Text = f.inputText;
+        }
+        public int Hook_Jeeves_Algorithm(Equation f, ref List<double[]> x, double alfa = 1.5, double delta = 0.1)
+        {
+            if (d[0] == 0)
+            {
+                d = new double[x[0].Length];
+                for (int i = 0; i < x[0].Length; i++)
+                    d[i] = 1;
+            }
+            double[] y = Equation.NewArray(x[0]);
+            double[] z = Equation.NewArray(x[0]);
+            int n = 0;
+            while (true)
+            {
+                for (int i = 0; i < y.Length; i++)
+                {
+                    z[i] = y[i] + d[i] * delta;
+                    if (f.Find(z) < f.Find(y)) y = Equation.NewArray(z);
+                    else
+                    {
+                        z[i] = y[i] - d[i] * delta;
+                        if (f.Find(z) < f.Find(y)) y = Equation.NewArray(z);
+                    }
+                }
+                if (f.Find(y) < f.Find(x[x.Count - 1]))
+                {
+                    x.Add(Equation.NewArray(y));
+                    y = Equation.Plus(x[x.Count - 1], Equation.Multiply(
+                        Equation.Plus(x[x.Count - 1], Equation.Multiply(x[x.Count - 2], -1)), alfa));
+                }
+                else if (delta < Epsilon) break;
+                else
+                {
+                    delta /= 2.0;
+                    if (x.Count > 1) x[x.Count - 1] = Equation.NewArray(x[x.Count - 2]);
+                    else x.Add(x[0]);
+                    y = Equation.NewArray(x[x.Count - 2]);
+                    n++;
+                }
+                if (n > 10000) break;
+            }
+            if (f.Find(new double[] { 5.478314 * Epsilon, 6.5487131 * Epsilon }) < f.Find(x[x.Count - 1])) x.Add(new double[] { 5.478314 * Epsilon, 6.5487131 * Epsilon });
+            return n;
         }
         private void Hook_Jeeves(object sender, RoutedEventArgs e)
         {
             if (f != null && f.inputText == equationText2.Text)
                 try
                 {
-                    ReadFromTextBoxes();
+                    ReadFromTextBoxes(e);
                     List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
                     double alfa = (double)new Equation(alfaVal.Text).Find(), delta = (double)new Equation(deltaVal.Text).Find();
                     Epsilon = (double)new Equation(epsilonVal.Text).Find();
-                    double[] y = Equation.NewArray(x[0]);
-                    double[] z = Equation.NewArray(x[0]);
-                    int n = 0;
-                    while (true)
-                    {
-                        for (int i = 0; i < y.Length; i++)
-                        {
-                            z[i] = y[i] + d[i] * delta;
-                            if (f.Find(z) < f.Find(y)) y = Equation.NewArray(z);
-                            else
-                            {
-                                z[i] = y[i] - d[i] * delta;
-                                if (f.Find(z) < f.Find(y)) y = Equation.NewArray(z);
-                            }
-                        }
-                        if (f.Find(y) < f.Find(x[x.Count - 1]))
-                        {
-                            x.Add(Equation.NewArray(y));
-                            y = Equation.Plus(x[x.Count - 1], Equation.Multiply(
-                                Equation.Plus(x[x.Count - 1], Equation.Multiply(x[x.Count - 2], -1)), alfa));
-                        }
-                        else if (delta < Epsilon) break;
-                        else
-                        {
-                            delta /= 2.0;
-                            x[x.Count - 1] = Equation.NewArray(x[x.Count - 2]);
-                            y = Equation.NewArray(x[x.Count - 2]);
-                            n++;
-                        }
-                        if (n > 10000) break;
-                    }
-                    if (f.Find(new double[] { 5.478314 * Epsilon, 6.5487131 * Epsilon }) < f.Find(x[x.Count - 1])) x.Add(new double[] { 5.478314 * Epsilon, 6.5487131 * Epsilon });
+                    int n = Hook_Jeeves_Algorithm(f, ref x, alfa, delta);
                     resultText2.Content = "Найден ответ за " + n + " шагов:\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " +
                         f.Find(x[x.Count - 1]);
                 }
@@ -316,7 +336,7 @@ namespace aditionalMatOperRes
             if (f != null && f.inputText == equationText2.Text)
                 try
                 {
-                    ReadFromTextBoxes();
+                    ReadFromTextBoxes(e);
                     List<double[]> x = new List<double[]> { Equation.NewArray(Values) }, y = new List<double[]> { Equation.NewArray(Values) },
                         d = new List<double[]>(), delts = new List<double[]>{ Equation.NewArray(this.d), Equation.NewArray(this.d)};
                     double alfa = (double)new Equation(alfaVal.Text).Find(), betta = (double)new Equation(bettaVal.Text).Find();
@@ -392,7 +412,7 @@ namespace aditionalMatOperRes
         private void SwapMethods_Click(object sender, RoutedEventArgs e)
         {
             HookJeeves = !HookJeeves;
-            createVariablesField(false);
+            createVariablesField(false, e);
             if (!HookJeeves)
             {
                 doLab2.Click -= Hook_Jeeves;
@@ -417,7 +437,7 @@ namespace aditionalMatOperRes
         private void Button4_Click(object sender, RoutedEventArgs e)
         {
             equationText2.Text = "x1^4+x2^4-(x1+x2)^2";
-            ReadFunction(null, new RoutedEventArgs());
+            ReadFunction(null, e);
             var textBoxes = Variables.Children.OfType<TextBox>().ToList();
             textBoxes[0].Text = "0";
             textBoxes[2].Text = "0";
@@ -425,7 +445,7 @@ namespace aditionalMatOperRes
         private void Button5_Click(object sender, RoutedEventArgs e)
         {
             equationText2.Text = "10(x1-sinx2)^2+0.1x2^2";
-            ReadFunction(null, new RoutedEventArgs());
+            ReadFunction(null, e);
             var textBoxes = Variables.Children.OfType<TextBox>().ToList();
             textBoxes[0].Text = "1.2";
             textBoxes[2].Text = "3";
@@ -433,10 +453,103 @@ namespace aditionalMatOperRes
         private void Button6_Click(object sender, RoutedEventArgs e)
         {
             equationText2.Text = "x1^3+x2^3-3x1*x2";
-            ReadFunction(null, new RoutedEventArgs());
+            ReadFunction(null, e);
             var textBoxes = Variables.Children.OfType<TextBox>().ToList();
             textBoxes[0].Text = "-1";
             textBoxes[2].Text = "3";
+        }
+        #endregion
+        #region Gradient descent && Fletcher Reeves
+        private void Gradient_descent(object sender, RoutedEventArgs e)
+        {
+            if (f != null && f.inputText == equationText3.Text)
+                try
+                {
+                    ReadFromTextBoxes(e);
+                    List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
+                    Epsilon = (double)new Equation(epsVal.Text).Find();
+                    int k = 0;
+                    int n = 0;
+                    while (true)
+                    {
+                        double[] fDiv = f.FindDerivativeVector(x[k]);
+                        double norm = Equation.VectorNorm(fDiv);
+                        if ( norm > Epsilon)
+                        {
+                            Equation[] equations = new Equation[x[k].Length];
+                            for (int i = 0; i < equations.Length; i++ )
+                                equations[i] = new Equation(x[k][i].ToString("F9") + "-x*(" + fDiv[i].ToString("F9") + ")");
+                            List<double> xProm = new List<double> {0};
+                            n += CubicApproximationAlgorithm(f.Find(equations), ref xProm);
+                            x.Add(Equation.Plus(x[k], Equation.Multiply(fDiv, - xProm[xProm.Count - 1])));
+                            /*List<double[]> xProm = new List<double[]> { new double[] { 0 } };
+                            n += Hook_Jeeves_Algorithm(f.Find(equations), ref xProm);
+                            x.Add(Equation.Plus(x[k], Equation.Multiply(fDiv, -xProm[xProm.Count - 1][0])));*/
+                            k++;
+                        }
+                        else break;
+                        if (n > 1000) break;
+                    }
+                    resultText3.Content = "Найден ответ за " + k + " шагов и\n" + n + " шагов в одномерной минимизации" +
+                        "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
+                }
+                catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
+            else MessageBox.Show("Вы не обновили уравнение", "Ошибка");
+        }
+        private double FindAlfa(double[] fDiv, double[] p, double[][] H)
+        {
+            return -Equation.ScalarMultiply(fDiv, p) / (Equation.ScalarMultiply(p, Equation.Multiply(H, p)));
+        }
+        private void Fletcher_Reeves(object sender, RoutedEventArgs e)
+        {
+            if (f != null && f.inputText == equationText3.Text)
+                try
+                {
+                    ReadFromTextBoxes(e);
+                    List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
+                    List<double[]> fDiv = new List<double[]> {f.FindDerivativeVector(x[0])};
+                    List<double[]> p = new List<double[]> {Equation.Multiply(fDiv[0], -1) };
+                    Epsilon = (double)new Equation(epsVal.Text).Find();
+                    double[][] H = f.FindDerivativeMatrixH();
+                    double alfa = FindAlfa(fDiv[0], p[0], H);
+                    x.Add(Equation.Plus(x[x.Count - 1], Equation.Multiply(p[0], alfa)));
+                    int k = 1;
+                    while (true)
+                    {
+                        fDiv.Add(f.FindDerivativeVector(x[k]));
+                        double norm = Equation.VectorNorm(fDiv[k]);
+                        if (norm > Epsilon)
+                        {
+                            p.Add(Equation.Plus(Equation.Multiply(fDiv[k], -1), Equation.Multiply(p[k - 1],
+                                Equation.ScalarMultiply(fDiv[k], fDiv[k]) / Equation.ScalarMultiply(fDiv[k-1], fDiv[k-1]))));
+                            alfa = FindAlfa(fDiv[k], p[k], H);
+                            x.Add(Equation.Plus(x[k], Equation.Multiply(p[k], alfa)));
+                            k++;
+                        }
+                        else break;
+                        if (k > 100) break;
+                    }
+                    resultText3.Content = "Найден ответ за " + k + " шагов" + 
+                        "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
+                }
+                catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
+            else MessageBox.Show("Вы не обновили уравнение", "Ошибка");
+        }
+        private void Button7_Click(object sender, RoutedEventArgs e)
+        {
+            equationText3.Text = "6x1+2x1^2-2x1*x2+2x2^2";
+            ReadFunction(null, e);
+            var textBoxes = Variables3.Children.OfType<TextBox>().ToList();
+            textBoxes[0].Text = "-1";
+            textBoxes[1].Text = "-1";
+        }
+        private void Button8_Click(object sender, RoutedEventArgs e)
+        {
+            equationText3.Text = "(x1-1)^2+100(x1-x2)^2";
+            ReadFunction(null, e);
+            var textBoxes = Variables3.Children.OfType<TextBox>().ToList();
+            textBoxes[0].Text = "3";
+            textBoxes[1].Text = "4";
         }
         #endregion
         private void Button_Click_1(object sender, RoutedEventArgs e)
@@ -450,8 +563,10 @@ namespace aditionalMatOperRes
             }
             resultText.Content += "\n" + f.Find(vars);
         }
-        private void ReadFromTextBoxes()
+        private void ReadFromTextBoxes(RoutedEventArgs e = null)
         {
+            bool lab2;
+            Grid Variables = (lab2 = getLabName(e) == "Lab2") ? this.Variables : this.Variables3;
             bool flag = true;
             Values = new double[f.VariablesNumb];
             d = new double[f.VariablesNumb];
@@ -459,9 +574,9 @@ namespace aditionalMatOperRes
             foreach (TextBox textbox in Variables.Children.OfType<TextBox>())
             {
                 double value = (double)new Equation(textbox.Text).Find();
-                if (flag) Values[i] = value; else d[i] = value;
+                if (flag || !lab2) Values[i] = value; else d[i] = value;
                 flag = !flag;
-                if (flag) i++;
+                if (flag || !lab2) i++;
             }
         }
         private TextBox CreateTextBox(int Width, int Left, int Top, string Text, string Name = "")
@@ -507,8 +622,14 @@ namespace aditionalMatOperRes
                     Content = Text
                 };
         }
-        private void createVariablesField(bool clear = true)
+        private string getLabName(RoutedEventArgs e)
         {
+            return ((TabItem)((Grid)((Button)e.Source).Parent).Parent).Header.ToString();
+        }
+        private void createVariablesField(bool clear = true, RoutedEventArgs e = null)
+        {
+            bool lab2;
+            Grid Variables = (lab2 = getLabName(e) == "Lab2") ? this.Variables : this.Variables3;
             if (clear)
             {
                 Variables.Children.Clear();
@@ -519,8 +640,11 @@ namespace aditionalMatOperRes
                     labelWidth = charWidth * (f.variables[i].Length + 1);
                     Variables.Children.Add(CreateTextBox(textWidth, labelWidth, i * Row, "0"));
                     Variables.Children.Add(CreateLabel(0, i * Row, f.variables[i] + "="));
-                    Variables.Children.Add(CreateTextBox(textWidth, labelWidth + textWidth + 33, i * Row, (HookJeeves ? "1" : "0,1"), "q" + (i + 1)));
-                    Variables.Children.Add(CreateLabel(textWidth + labelWidth + 4, i * Row, (HookJeeves ? "d" : "Δx")+ (i + 1)+ "="));
+                    if (lab2)
+                    {
+                        Variables.Children.Add(CreateTextBox(textWidth, labelWidth + textWidth + 33, i * Row, (HookJeeves ? "1" : "0,1"), "q" + (i + 1)));
+                        Variables.Children.Add(CreateLabel(textWidth + labelWidth + 4, i * Row, (HookJeeves ? "d" : "Δx") + (i + 1) + "="));
+                    }
                 }
             }
             else

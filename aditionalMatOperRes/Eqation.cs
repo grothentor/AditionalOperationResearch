@@ -11,13 +11,14 @@ namespace aditionalMatOperRes
         public string inputText { set; get; }
         public int VariablesNumb { set; get; }
         public List<string> variables { set; get; }
-        public List<object> RPN_Text { set; get; }
+        private List<object> RPN_Text { set; get; }
+
         public static Dictionary<char, int> Signs = new Dictionary<char, int> 
         { { '+', 2 }, { '-', 2 }, { '*', 4 }, { '/', 4 }, { '^', 6 }, { '(', 0 }, { ')', 0 } };
         public static int FunctionsPriority = 3;
         public static List<char> Numbers = new List<char> { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',' };
         public static List<string> Functions = new List<string> { "sin", "cos", "tg", "ctg" };
-        double dx = 0.000005;
+        double dx = 0.0000001;
         public Equation()
         {
             inputText = "";
@@ -29,6 +30,10 @@ namespace aditionalMatOperRes
         {
             Parse(Equation);
             FindVariables();
+        }
+        public void SetRPN(List<object> newRPN)
+        {
+            this.RPN_Text = new List<object>(newRPN.ToArray());
         }
         public static int Check_Priority(char a, object b)
         {
@@ -215,12 +220,26 @@ namespace aditionalMatOperRes
                 newArray[i] = array1[i] * delta;
             return newArray;
         }
+        public static double[] Multiply(double[][] array1, double[] array2)
+        {
+            double[] result = new double[array1.Length];
+            for (int i = 0; i < array1.Length; i++)
+                result[i] = ScalarMultiply(array1[i], array2);
+            return result;
+        }
         public static double ScalarMultiply(double[] array1, double[] array2)
         {
             double Summ = 0;
             for (int i = 0; i < array1.Length; i++)
                 Summ += array1[i] * array2[i];
             return Summ;
+        }
+        public static double VectorNorm(double[] array)
+        {
+            double Summ = 0;
+            for (int i = 0; i < array.Length; i++)
+                Summ += Math.Pow(array[i], 2);
+            return Math.Sqrt(Summ);
         }
         public static double[] Pow(double[] array1, double power)
         {
@@ -262,6 +281,44 @@ namespace aditionalMatOperRes
             return result;
         }
         #endregion
+        public double[] FindDerivativeVector(params double[] variables)
+        {
+            decimal dx = (decimal)this.dx;
+            double[] Deveretives = new double[variables.Length];
+            for (int i = 0; i < variables.Length; i++)
+            {
+                double[] variables2 = (double[])variables.Clone();
+                variables2[i] = variables[i] + this.dx;
+                Deveretives[i] = (double)(((decimal)Find(variables2) - (decimal)Find(variables)) / dx);
+            }
+            return Deveretives;
+        }
+        public double FindSecondDerivative(double[] delta1, double[] delta2)
+        {
+            decimal dx = (decimal)this.dx;
+            double[] x = new double[2];
+
+            return (double)((((decimal)Find(x) - (decimal)Find(Plus(x, delta2))) / dx - 
+                ((decimal)Find(Plus(x, delta1)) - (decimal)Find(Plus(x, Plus(delta1, delta2)))) / dx) / dx);
+        }
+        public double[][] FindDerivativeMatrixH()
+        {
+            double[][] Deveretives = new double[variables.Count][];
+            double[] delta = { 0, 0 };
+            for (int i = 0; i < variables.Count; i++)
+            {
+                Deveretives[i] = new double[variables.Count];
+                for (int j = 0; j < variables.Count; j++)
+                {
+                    double[] delta1 = (double[])delta.Clone();
+                    double[] delta2 = (double[])delta.Clone();
+                    delta1[i] += dx;
+                    delta2[j] += dx;
+                    Deveretives[i][j] = FindSecondDerivative(delta1, delta2);
+                }
+            }
+            return Deveretives;
+        }
         public double? FindDerivative(params double[] variables)
         {
             double[] variables2 = new double[variables.Length];
@@ -301,6 +358,23 @@ namespace aditionalMatOperRes
                     }
             }
             return (double)RPN_Text[0];
+        }
+        public Equation Find(Equation[] equations)
+        {
+            if (equations.Length != VariablesNumb) return null;
+            List<object> RPN_Text = new List<object>(this.RPN_Text.ToArray());
+            for (int i = 0; i < RPN_Text.Count; i++)
+                if (RPN_Text[i] is string && !Functions.Contains(RPN_Text[i]))
+                {
+                    List<object> newRPN = equations[this.variables.IndexOf((string)RPN_Text[i])].RPN_Text;
+                    RPN_Text.RemoveAt(i);
+                    RPN_Text.InsertRange(i, newRPN);
+                    i += newRPN.Count - 1;
+                }
+            Equation equation = new Equation();
+            equation.SetRPN(RPN_Text);
+            equation.FindVariables();
+            return equation;
         }
         private void DoFunction(ref List<object> RPN_Text, int n)
         {
