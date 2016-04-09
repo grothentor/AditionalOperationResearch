@@ -55,7 +55,7 @@
                 <Grid>
                     <TextBox Name="equationText3" Height="23" Margin="74,26,336,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="x1^2+x2^2"/>
                     <Label Content="Equation:" HorizontalAlignment="Left" Margin="10,22,0,0" VerticalAlignment="Top"/>
-                    <TextBox Name="epsVal" Height="23" Margin="0,25,249,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="0.0001" HorizontalAlignment="Right" Width="54"/>
+                    <TextBox Name="epsVal" Height="23" Margin="0,25,249,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="0.01" HorizontalAlignment="Right" Width="54"/>
                     <Label Content="ε=" HorizontalAlignment="Right" Margin="0,23,303,0" VerticalAlignment="Top" Width="28"/>
                     <Label Content="Result:" HorizontalAlignment="Right" Margin="0,8,193,0" VerticalAlignment="Top"/>
                     <Label Name="resultText3" Content="Result string" Margin="0,39,10,10" HorizontalAlignment="Right" Width="228"/>
@@ -68,6 +68,25 @@
                         </Grid>
                     </GroupBox>
                     <Button Content="Read Eqation" HorizontalAlignment="Left" Margin="10,53,0,0" VerticalAlignment="Top" Width="88" Click="ReadFunction"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Lab4">
+                <Grid>
+                    <TextBox Name="equationText4" Height="35" Margin="74,26,243,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="x1^2+x2^2" ScrollViewer.CanContentScroll="True" VerticalContentAlignment="Center"/>
+                    <Label Content="Equation:" HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+                    <TextBox Name="epsValue" Height="23" Margin="0,2,403,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="0.0001" HorizontalAlignment="Right" Width="54"/>
+                    <Label Content="ε=" HorizontalAlignment="Right" Margin="0,-2,457,0" VerticalAlignment="Top" Width="28"/>
+                    <Label Content="Result:" HorizontalAlignment="Right" Margin="0,8,193,0" VerticalAlignment="Top"/>
+                    <Label Name="resultText4" Content="Result string" Margin="0,39,10,10" HorizontalAlignment="Right" Width="228"/>
+                    <Button Content="DFP" HorizontalAlignment="Left" Margin="40,0,0,10" VerticalAlignment="Bottom" Width="104" Height="22" Click="DFP"/>
+                    <Button Content="Newton" HorizontalAlignment="Right" Margin="0,0,274,10" VerticalAlignment="Bottom" Width="104" Height="22" Click="Newton"/>
+                    <Button Content="№1" HorizontalAlignment="Left" Margin="10,1,0,0" VerticalAlignment="Top" Width="25" Height="21" Click="Button9_Click"/>
+                    <Button Content="№4" HorizontalAlignment="Left" Margin="40,1,0,0" VerticalAlignment="Top" Width="25" Height="21" Click="Button10_Click"/>
+                    <GroupBox Header="Variables" Margin="13,91,243,37">
+                        <Grid Name="Variables4">
+                        </Grid>
+                    </GroupBox>
+                    <Button Content="Read Eqation" HorizontalAlignment="Left" Margin="10,66,0,0" VerticalAlignment="Top" Width="88" Click="ReadFunction"/>
                 </Grid>
             </TabItem>
         </TabControl>

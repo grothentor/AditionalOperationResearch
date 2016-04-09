@@ -185,9 +185,9 @@ namespace aditionalMatOperRes
         #region Hook-Jeeves && Rosenbrock
         private void ReadFunction(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = getLabName(e) == "Lab2" ? equationText2 : equationText3;
+            TextBox textBox = (TextBox)GetElement(e, "TextBox");
             f = new Equation(textBox.Text);
-            createVariablesField(true, e);
+            CreateVariablesField(true, e);
             textBox.Text = f.inputText;
         }
         public int Hook_Jeeves_Algorithm(Equation f, ref List<double[]> x, double alfa = 1.5, double delta = 0.1)
@@ -412,7 +412,7 @@ namespace aditionalMatOperRes
         private void SwapMethods_Click(object sender, RoutedEventArgs e)
         {
             HookJeeves = !HookJeeves;
-            createVariablesField(false, e);
+            CreateVariablesField(false, e);
             if (!HookJeeves)
             {
                 doLab2.Click -= Hook_Jeeves;
@@ -459,6 +459,60 @@ namespace aditionalMatOperRes
             textBoxes[2].Text = "3";
         }
         #endregion
+        #region DFP && Newton
+        private void DFP(object sender, RoutedEventArgs e)
+        {
+            if (f != null && f.inputText == equationText4.Text)
+                try
+                {
+                    ReadFromTextBoxes(e);
+                    List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
+                    Epsilon = (double)new Equation(epsValue.Text).Find();
+                    int k = 0;
+                    int n = 0;
+                    resultText4.Content = "Найден ответ за " + k + " шагов и\n" + n + " шагов в одномерной минимизации" +
+                        "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
+                }
+                catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
+            else MessageBox.Show("Вы не обновили уравнение", "Ошибка");
+        }
+        private void Newton(object sender, RoutedEventArgs e)
+        {
+            if (f != null && f.inputText == equationText4.Text)
+                try
+                {
+                    ReadFromTextBoxes(e);
+                    List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
+                    List<double[]> fDiv = new List<double[]> {f.FindDerivativeVector(x[0])};
+                    List<double[]> p = new List<double[]> {Equation.Multiply(fDiv[0], -1) };
+                    Epsilon = (double)new Equation(epsValue.Text).Find();
+                    double[][] H = f.FindDerivativeMatrixH();
+                    int k = 1;                    
+                    resultText4.Content = "Найден ответ за " + k + " шагов" + 
+                        "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
+                }
+                catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
+            else MessageBox.Show("Вы не обновили уравнение", "Ошибка");
+        }
+        private void Button9_Click(object sender, RoutedEventArgs e)
+        {
+            equationText4.Text = "4x1^2+x2^2-40x1-12x2+135";
+            ReadFunction(null, e);
+            var textBoxes = Variables4.Children.OfType<TextBox>().ToList();
+            textBoxes[0].Text = "4";
+            textBoxes[1].Text = "8";
+        }
+        private void Button10_Click(object sender, RoutedEventArgs e)
+        {
+            equationText4.Text = "x1^2+x2^2+x3^2+x4^2+16x1^2x2^2+8x2^2x3^2+x3^2x4^2+2";
+            ReadFunction(null, e);
+            var textBoxes = Variables4.Children.OfType<TextBox>().ToList();
+            textBoxes[0].Text = "1";
+            textBoxes[1].Text = "2";
+            textBoxes[2].Text = "3";
+            textBoxes[3].Text = "4";
+        }
+        #endregion
         #region Gradient descent && Fletcher Reeves
         private void Gradient_descent(object sender, RoutedEventArgs e)
         {
@@ -474,17 +528,14 @@ namespace aditionalMatOperRes
                     {
                         double[] fDiv = f.FindDerivativeVector(x[k]);
                         double norm = Equation.VectorNorm(fDiv);
-                        if ( norm > Epsilon)
+                        if (norm > Epsilon)
                         {
                             Equation[] equations = new Equation[x[k].Length];
-                            for (int i = 0; i < equations.Length; i++ )
+                            for (int i = 0; i < equations.Length; i++)
                                 equations[i] = new Equation(x[k][i].ToString("F9") + "-x*(" + fDiv[i].ToString("F9") + ")");
-                            List<double> xProm = new List<double> {0};
+                            List<double> xProm = new List<double> { 0 };
                             n += CubicApproximationAlgorithm(f.Find(equations), ref xProm);
-                            x.Add(Equation.Plus(x[k], Equation.Multiply(fDiv, - xProm[xProm.Count - 1])));
-                            /*List<double[]> xProm = new List<double[]> { new double[] { 0 } };
-                            n += Hook_Jeeves_Algorithm(f.Find(equations), ref xProm);
-                            x.Add(Equation.Plus(x[k], Equation.Multiply(fDiv, -xProm[xProm.Count - 1][0])));*/
+                            x.Add(Equation.Plus(x[k], Equation.Multiply(fDiv, -xProm[xProm.Count - 1])));
                             k++;
                         }
                         else break;
@@ -507,8 +558,8 @@ namespace aditionalMatOperRes
                 {
                     ReadFromTextBoxes(e);
                     List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
-                    List<double[]> fDiv = new List<double[]> {f.FindDerivativeVector(x[0])};
-                    List<double[]> p = new List<double[]> {Equation.Multiply(fDiv[0], -1) };
+                    List<double[]> fDiv = new List<double[]> { f.FindDerivativeVector(x[0]) };
+                    List<double[]> p = new List<double[]> { Equation.Multiply(fDiv[0], -1) };
                     Epsilon = (double)new Equation(epsVal.Text).Find();
                     double[][] H = f.FindDerivativeMatrixH();
                     double alfa = FindAlfa(fDiv[0], p[0], H);
@@ -521,7 +572,7 @@ namespace aditionalMatOperRes
                         if (norm > Epsilon)
                         {
                             p.Add(Equation.Plus(Equation.Multiply(fDiv[k], -1), Equation.Multiply(p[k - 1],
-                                Equation.ScalarMultiply(fDiv[k], fDiv[k]) / Equation.ScalarMultiply(fDiv[k-1], fDiv[k-1]))));
+                                Equation.ScalarMultiply(fDiv[k], fDiv[k]) / Equation.ScalarMultiply(fDiv[k - 1], fDiv[k - 1]))));
                             alfa = FindAlfa(fDiv[k], p[k], H);
                             x.Add(Equation.Plus(x[k], Equation.Multiply(p[k], alfa)));
                             k++;
@@ -529,7 +580,7 @@ namespace aditionalMatOperRes
                         else break;
                         if (k > 100) break;
                     }
-                    resultText3.Content = "Найден ответ за " + k + " шагов" + 
+                    resultText3.Content = "Найден ответ за " + k + " шагов" +
                         "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
                 }
                 catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
@@ -565,8 +616,8 @@ namespace aditionalMatOperRes
         }
         private void ReadFromTextBoxes(RoutedEventArgs e = null)
         {
-            bool lab2;
-            Grid Variables = (lab2 = getLabName(e) == "Lab2") ? this.Variables : this.Variables3;
+            bool NotOneVariables = Array.IndexOf(new string[] { "Lab2" }, GetLabName(e)) != -1; ;
+            Grid Variables = (Grid)GetElement(e);
             bool flag = true;
             Values = new double[f.VariablesNumb];
             d = new double[f.VariablesNumb];
@@ -574,9 +625,9 @@ namespace aditionalMatOperRes
             foreach (TextBox textbox in Variables.Children.OfType<TextBox>())
             {
                 double value = (double)new Equation(textbox.Text).Find();
-                if (flag || !lab2) Values[i] = value; else d[i] = value;
+                if (flag || !NotOneVariables) Values[i] = value; else d[i] = value;
                 flag = !flag;
-                if (flag || !lab2) i++;
+                if (flag || !NotOneVariables) i++;
             }
         }
         private TextBox CreateTextBox(int Width, int Left, int Top, string Text, string Name = "")
@@ -622,14 +673,38 @@ namespace aditionalMatOperRes
                     Content = Text
                 };
         }
-        private string getLabName(RoutedEventArgs e)
+        private string GetLabName(RoutedEventArgs e)
         {
             return ((TabItem)((Grid)((Button)e.Source).Parent).Parent).Header.ToString();
         }
-        private void createVariablesField(bool clear = true, RoutedEventArgs e = null)
+        private object GetElement(RoutedEventArgs e, string type = "Grid")
         {
-            bool lab2;
-            Grid Variables = (lab2 = getLabName(e) == "Lab2") ? this.Variables : this.Variables3;
+            string lab = GetLabName(e);
+            switch (type)
+            {
+                case "Grid":
+                    switch (lab)
+                    {
+                        case "Lab2": return Variables;
+                        case "Lab3": return Variables3;
+                        case "Lab4": return Variables4;
+                        default: return null;
+                    }
+                case "TextBox":
+                    switch (lab)
+                    {
+                        case "Lab2": return equationText2;
+                        case "Lab3": return equationText3;
+                        case "Lab4": return equationText4;
+                        default: return null;
+                    }
+                default: return null;
+            }
+        }
+        private void CreateVariablesField(bool clear = true, RoutedEventArgs e = null)
+        {
+            bool NotOnlyVariables = Array.IndexOf(new string[] {"Lab2"}, GetLabName(e)) != -1;
+            Grid Variables = (Grid) GetElement(e);
             if (clear)
             {
                 Variables.Children.Clear();
@@ -640,7 +715,7 @@ namespace aditionalMatOperRes
                     labelWidth = charWidth * (f.variables[i].Length + 1);
                     Variables.Children.Add(CreateTextBox(textWidth, labelWidth, i * Row, "0"));
                     Variables.Children.Add(CreateLabel(0, i * Row, f.variables[i] + "="));
-                    if (lab2)
+                    if (NotOnlyVariables)
                     {
                         Variables.Children.Add(CreateTextBox(textWidth, labelWidth + textWidth + 33, i * Row, (HookJeeves ? "1" : "0,1"), "q" + (i + 1)));
                         Variables.Children.Add(CreateLabel(textWidth + labelWidth + 4, i * Row, (HookJeeves ? "d" : "Δx") + (i + 1) + "="));
