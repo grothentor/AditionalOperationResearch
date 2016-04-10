@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="371" Width="585.716">
     <Grid>
-        <TabControl SelectedIndex="2">
+        <TabControl SelectedIndex="3">
             <TabItem Header="Lab1">
                 <Grid>
                     <TextBox Name="equationText" Height="23" Margin="74,26,334,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="x^5"/>

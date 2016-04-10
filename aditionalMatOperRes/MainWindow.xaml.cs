@@ -459,60 +459,6 @@ namespace aditionalMatOperRes
             textBoxes[2].Text = "3";
         }
         #endregion
-        #region DFP && Newton
-        private void DFP(object sender, RoutedEventArgs e)
-        {
-            if (f != null && f.inputText == equationText4.Text)
-                try
-                {
-                    ReadFromTextBoxes(e);
-                    List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
-                    Epsilon = (double)new Equation(epsValue.Text).Find();
-                    int k = 0;
-                    int n = 0;
-                    resultText4.Content = "Найден ответ за " + k + " шагов и\n" + n + " шагов в одномерной минимизации" +
-                        "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
-                }
-                catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
-            else MessageBox.Show("Вы не обновили уравнение", "Ошибка");
-        }
-        private void Newton(object sender, RoutedEventArgs e)
-        {
-            if (f != null && f.inputText == equationText4.Text)
-                try
-                {
-                    ReadFromTextBoxes(e);
-                    List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
-                    List<double[]> fDiv = new List<double[]> {f.FindDerivativeVector(x[0])};
-                    List<double[]> p = new List<double[]> {Equation.Multiply(fDiv[0], -1) };
-                    Epsilon = (double)new Equation(epsValue.Text).Find();
-                    double[][] H = f.FindDerivativeMatrixH();
-                    int k = 1;                    
-                    resultText4.Content = "Найден ответ за " + k + " шагов" + 
-                        "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
-                }
-                catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
-            else MessageBox.Show("Вы не обновили уравнение", "Ошибка");
-        }
-        private void Button9_Click(object sender, RoutedEventArgs e)
-        {
-            equationText4.Text = "4x1^2+x2^2-40x1-12x2+135";
-            ReadFunction(null, e);
-            var textBoxes = Variables4.Children.OfType<TextBox>().ToList();
-            textBoxes[0].Text = "4";
-            textBoxes[1].Text = "8";
-        }
-        private void Button10_Click(object sender, RoutedEventArgs e)
-        {
-            equationText4.Text = "x1^2+x2^2+x3^2+x4^2+16x1^2x2^2+8x2^2x3^2+x3^2x4^2+2";
-            ReadFunction(null, e);
-            var textBoxes = Variables4.Children.OfType<TextBox>().ToList();
-            textBoxes[0].Text = "1";
-            textBoxes[1].Text = "2";
-            textBoxes[2].Text = "3";
-            textBoxes[3].Text = "4";
-        }
-        #endregion
         #region Gradient descent && Fletcher Reeves
         private void Gradient_descent(object sender, RoutedEventArgs e)
         {
@@ -601,6 +547,111 @@ namespace aditionalMatOperRes
             var textBoxes = Variables3.Children.OfType<TextBox>().ToList();
             textBoxes[0].Text = "3";
             textBoxes[1].Text = "4";
+        }
+        #endregion
+        #region DFP && Newton
+        private void DFP(object sender, RoutedEventArgs e)
+        {
+            if (f != null && f.inputText == equationText4.Text)
+                try
+                {
+                    ReadFromTextBoxes(e);
+                    List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
+                    List<double[]> fDiv = new List<double[]> { f.FindDerivativeVector(x[0]) };
+                    Epsilon = (double)new Equation(epsValue.Text).Find();
+                    int k = 0;
+                    int n = 0;
+                    double[] p;
+                    bool doMethod = true;                   
+                    double[][] Eta = Equation.GetE(f.VariablesNumb);
+                    if (Equation.VectorNorm(fDiv[k]) <= Epsilon) doMethod = false;
+                    
+                    while (doMethod)
+                    {
+                        var val = Equation.NewVector(Equation.Multiply(fDiv[k], -1), Directions.Vertical);
+                        p = Equation.GetVectorFromMatrix(
+                            Equation.VectorMultiply(Eta, Equation.NewVector(Equation.Multiply(fDiv[k], -1), Directions.Vertical)));
+                        Equation[] equations = new Equation[x[k].Length];
+                        for (int i = 0; i < equations.Length; i++)
+                            equations[i] = new Equation(x[k][i].ToString("F9") + "+x*(" + p[i].ToString("F9") + ")");
+                        List<double> xProm = new List<double> { 0 };
+                        n += CubicApproximationAlgorithm(f.Find(equations), ref xProm);
+                        //if (xProm[xProm.Count - 1] < 0) break;
+                        x.Add(Equation.Plus(x[k], Equation.Multiply(p, xProm[xProm.Count - 1])));
+                        fDiv.Add(f.FindDerivativeVector(x[k + 1]));
+                        if (Equation.VectorNorm(fDiv[k]) <= Epsilon) break;
+                        double[] deltaG = Equation.Plus(fDiv[k + 1], Equation.Multiply(fDiv[k], -1)),
+                            deltaX = Equation.Plus(x[k + 1], Equation.Multiply(x[k], -1));
+                        double[][] firstMatrix = Equation.Multiply(
+                            Equation.VectorMultiply(
+                            Equation.NewVector(deltaX, Directions.Vertical),
+                            Equation.NewVector(deltaX, Directions.Horizontal)),
+                            1/Equation.ScalarMultiply(deltaX, deltaG));
+                        double[][] secondMatrix = Equation.Multiply(
+                            Equation.VectorMultiply(
+                            Equation.VectorMultiply(
+                            Equation.VectorMultiply(Eta, Equation.NewVector(deltaG, Directions.Vertical)), 
+                            Equation.NewVector(deltaG, Directions.Horizontal)), 
+                            Equation.MatrixTranspose(Eta)), 
+                            - 1/Equation.ScalarMultiply(
+                            Equation.GetVectorFromMatrix(
+                            Equation.VectorMultiply(
+                            Equation.NewVector(deltaG, Directions.Horizontal), Eta)), 
+                            deltaG));
+                        Eta = Equation.Plus(Equation.Plus(Eta, firstMatrix), secondMatrix);
+                        k++;
+                    }
+                    resultText4.Content = "Найден ответ за " + k + " шагов и\n" + n + " шагов в одномерной минимизации" +
+                        "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
+                }
+                catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
+            else MessageBox.Show("Вы не обновили уравнение", "Ошибка");
+        }
+        private void Newton(object sender, RoutedEventArgs e)
+        {
+            if (f != null && f.inputText == equationText4.Text)
+                try
+                {
+                    ReadFromTextBoxes(e);
+                    List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
+                    List<double[]> fDiv = new List<double[]> {};
+                    Epsilon = (double)new Equation(epsValue.Text).Find();
+                    int k = 0;
+                    while (true)
+                    {
+                        fDiv.Add(f.FindDerivativeVector(x[k]));
+                        if (Equation.VectorNorm(fDiv[k]) <= Epsilon) break;
+                        double[][] f2Div = f.FindDerivativeMatrixH(x.ToArray()[k]);
+                        double[] p = Equation.Multiply(
+                            Equation.GetVectorFromMatrix(
+                            Equation.VectorMultiply(Equation.Pow(f2Div, -1),
+                            Equation.NewVector(fDiv[k], Directions.Vertical))), -1);
+                        x.Add(Equation.Plus(x[k], p));
+                        k++;
+                    }
+                    resultText4.Content = "\nНайден ответ за " + k + " шагов" +
+                        "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
+                }
+                catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
+            else MessageBox.Show("Вы не обновили уравнение", "Ошибка");
+        }
+        private void Button9_Click(object sender, RoutedEventArgs e)
+        {
+            equationText4.Text = "4x1^2+x2^2-40x1-12x2+135";
+            ReadFunction(null, e);
+            var textBoxes = Variables4.Children.OfType<TextBox>().ToList();
+            textBoxes[0].Text = "4";
+            textBoxes[1].Text = "8";
+        }
+        private void Button10_Click(object sender, RoutedEventArgs e)
+        {
+            equationText4.Text = "x1^2+x2^2+x3^2+x4^2+16x1^2x2^2+8x2^2x3^2+x3^2x4^2+2";
+            ReadFunction(null, e);
+            var textBoxes = Variables4.Children.OfType<TextBox>().ToList();
+            textBoxes[0].Text = "1";
+            textBoxes[1].Text = "2";
+            textBoxes[2].Text = "3";
+            textBoxes[3].Text = "4";
         }
         #endregion
         private void Button_Click_1(object sender, RoutedEventArgs e)
