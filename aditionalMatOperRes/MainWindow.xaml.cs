@@ -96,8 +96,9 @@ namespace aditionalMatOperRes
             catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
         }
 
-        private int CubicApproximationAlgorithm(Equation f, ref List<double> x)
+        private int CubicApproximationAlgorithm(Equation f, ref List<double> x, double Epsilon = Double.NaN)
         {
+            if (Double.NaN == Epsilon) Epsilon = this.Epsilon;
             double fDiv = (double)f.FindDerivative(x[0]), delta = 0.01;
             do
             {
@@ -468,6 +469,7 @@ namespace aditionalMatOperRes
                     ReadFromTextBoxes(e);
                     List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
                     Epsilon = (double)new Equation(epsVal.Text).Find();
+                    double Epsilon1 = (double)new Equation(eps1Val.Text).Find();
                     int k = 0;
                     int n = 0;
                     while (true)
@@ -480,12 +482,12 @@ namespace aditionalMatOperRes
                             for (int i = 0; i < equations.Length; i++)
                                 equations[i] = new Equation(x[k][i].ToString("F9") + "-x*(" + fDiv[i].ToString("F9") + ")");
                             List<double> xProm = new List<double> { 0 };
-                            n += CubicApproximationAlgorithm(f.Find(equations), ref xProm);
+                            n += CubicApproximationAlgorithm(f.Find(equations), ref xProm, Epsilon1);
                             x.Add(Equation.Plus(x[k], Equation.Multiply(fDiv, -xProm[xProm.Count - 1])));
                             k++;
                         }
                         else break;
-                        if (n > 1000) break;
+                        if (n > 1000 || k > 1000) break;
                     }
                     resultText3.Content = "Найден ответ за " + k + " шагов и\n" + n + " шагов в одномерной минимизации" +
                         "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
@@ -559,6 +561,7 @@ namespace aditionalMatOperRes
                     List<double[]> x = new List<double[]> { Equation.NewArray(Values) };
                     List<double[]> fDiv = new List<double[]> { f.FindDerivativeVector(x[0]) };
                     Epsilon = (double)new Equation(epsValue.Text).Find();
+                    double Epsilon1 = (double)new Equation(eps1Value.Text).Find();
                     int k = 0;
                     int n = 0;
                     double[] p;
@@ -575,8 +578,8 @@ namespace aditionalMatOperRes
                         for (int i = 0; i < equations.Length; i++)
                             equations[i] = new Equation(x[k][i].ToString("F9") + "+x*(" + p[i].ToString("F9") + ")");
                         List<double> xProm = new List<double> { 0 };
-                        n += CubicApproximationAlgorithm(f.Find(equations), ref xProm);
-                        //if (xProm[xProm.Count - 1] < 0) break;
+                        n += CubicApproximationAlgorithm(f.Find(equations), ref xProm, Epsilon1);
+                        if (xProm[xProm.Count - 1] <= 0) break;
                         x.Add(Equation.Plus(x[k], Equation.Multiply(p, xProm[xProm.Count - 1])));
                         fDiv.Add(f.FindDerivativeVector(x[k + 1]));
                         if (Equation.VectorNorm(fDiv[k]) <= Epsilon) break;
@@ -629,7 +632,7 @@ namespace aditionalMatOperRes
                         x.Add(Equation.Plus(x[k], p));
                         k++;
                     }
-                    resultText4.Content = "\nНайден ответ за " + k + " шагов" +
+                    resultText4.Content = "Найден ответ за " + k + " шагов" +
                         "\nМинимум достигается в точке \n" + Equation.ArrayToStr(x[x.Count - 1]) + "\nf(x) = " + f.Find(x[x.Count - 1]);
                 }
                 catch { MessageBox.Show("Ошибка. Проверьте правильность введенной форумулы!", "Ошибка"); }
